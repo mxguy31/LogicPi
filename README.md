@@ -45,7 +45,8 @@ class <InterfaceName>:
         # required IO identifier keys area assigned in the modules.ini file
 ```
 
-## Suggested IO identifier naming system:
+## Suggested IO identifier naming system
+```
 DOXX - Digital  Output  00 through 99
 DIXX - Digital  Input   00 through 99
 DSXX - Digital  Sensor  00 through 99
@@ -53,3 +54,4 @@ DVXX - Digital  Value   00 through 99
 AOXX - Analogue Output  00 through 99
 AIXX - Analogue Input   00 through 99
 IVXX - Internal Value   00 through 99
+```
