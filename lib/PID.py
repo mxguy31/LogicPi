@@ -1,3 +1,5 @@
+# From Martin Lundberg (MIT License), https://pypi.org/project/simple-pid/
+
 import time
 import warnings
 
