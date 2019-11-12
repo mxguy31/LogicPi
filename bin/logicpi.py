@@ -66,3 +66,5 @@ def main_loop():
 if __name__ == '__main__':
     print(datetime.now(), 'Starting Pi_PLC, please wait.')
     main_loop()
+
+# This is a test comment to test how github and pycharm version control works.
