@@ -30,16 +30,16 @@ class PID(object):
     """
 
     def __init__(self,
-                 Kp=1.0, Ki=0.0, Kd=0.0,
+                 gain_p=1.0, gain_i=0.0, gain_d=0.0,
                  setpoint=0,
                  sample_time=0.01,
                  output_limits=(None, None),
                  auto_mode=True,
                  proportional_on_measurement=False):
         """
-        :param Kp: The value for the proportional gain Kp
-        :param Ki: The value for the integral gain Ki
-        :param Kd: The value for the derivative gain Kd
+        :param gain_p: The value for the proportional gain
+        :param gain_i: The value for the integral gain
+        :param gain_d: The value for the derivative gain
         :param setpoint: The initial setpoint that the PID will try to achieve
         :param sample_time: The time in seconds which the controller should wait before generating a new output value.
                             The PID works best when it is constantly called (eg. during a loop), but with a sample
@@ -55,7 +55,7 @@ class PID(object):
                                             rather than on the error (which is the traditional way). Using
                                             proportional-on-measurement avoids overshoot for some types of systems.
         """
-        self.Kp, self.Ki, self.Kd = Kp, Ki, Kd
+        self.gain_p, self.gain_i, self.gain_d = gain_p, gain_i, gain_d
         self.setpoint = setpoint
         self.sample_time = sample_time
 
@@ -64,6 +64,14 @@ class PID(object):
         self.proportional_on_measurement = proportional_on_measurement
 
         self.reset()
+
+        # Defined here as None to remove the 'Instance attribute defined out of __init__ warnings
+        self._integral = None
+        self._proportional = None
+        self._derivative = None
+        self._last_input = None
+        self._last_output = None
+        self._last_time = None
 
     def __call__(self, input_, dt=None):
         """
@@ -93,16 +101,16 @@ class PID(object):
         # compute the proportional term
         if not self.proportional_on_measurement:
             # regular proportional-on-error, simply set the proportional term
-            self._proportional = self.Kp * error
+            self._proportional = self.gain_p * error
         else:
             # add the proportional error on measurement to error_sum
-            self._proportional -= self.Kp * d_input
+            self._proportional -= self.gain_p * d_input
 
         # compute integral and derivative terms
-        self._integral += self.Ki * error * dt
+        self._integral += self.gain_i * error * dt
         self._integral = _clamp(self._integral, self.output_limits)  # avoid integral windup
 
-        self._derivative = -self.Kd * d_input / dt
+        self._derivative = -self.gain_d * d_input / dt
 
         # compute final output
         output = self._proportional + self._integral + self._derivative
@@ -125,13 +133,13 @@ class PID(object):
 
     @property
     def tunings(self):
-        """The tunings used by the controller as a tuple: (Kp, Ki, Kd)"""
-        return self.Kp, self.Ki, self.Kd
+        """The tunings used by the controller as a tuple: (gain_p, gain_i, gain_d)"""
+        return self.gain_p, self.gain_i, self.gain_d
 
     @tunings.setter
     def tunings(self, tunings):
         """Setter for the PID tunings"""
-        self.Kp, self.Ki, self.Kd = tunings
+        self.gain_p, self.gain_i, self.gain_d = tunings
 
     @property
     def auto_mode(self):
