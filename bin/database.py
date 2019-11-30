@@ -63,7 +63,7 @@ class Database:
             print("Database error: " + str(e))
 
     def write_data(self, parameter, value):
-        data = (parameter, value, int(time.time()))
+        data = (str(parameter), str(value), int(time.time()))
         sql = ''' REPLACE INTO system_status (parameter, value, timestamp) VALUES(?,?,?) '''
         self._cursor_ops(sql, data)
 

@@ -49,7 +49,6 @@ class OWFSTemperature:
 
     def _temperature_loop(self):
         while True:
-            time.sleep(self._loop_time)
             for sensor, card_map in self._config.items():
                 temperature = -300
                 if sensor.startswith('DS'):
@@ -72,6 +71,7 @@ class OWFSTemperature:
                             raise
 
                     self._temperature_dict[sensor] = temperature
+            time.sleep(self._loop_time)
 
     def get_values(self, sensors=None):
         if not isinstance(sensors, list):

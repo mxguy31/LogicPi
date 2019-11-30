@@ -1,0 +1,58 @@
+DS01 - Tank sensor 1
+DS02 - Tank sensor 2
+DS03 - Tank sensor 3
+DS04 - None
+DS05 - None
+DS06 - None
+DS07 - None
+DS08 - None
+DS09 - None
+DS10 - None
+DS11 - None
+DS12 - None
+DS13 - None
+DS14 - None
+DS15 - None
+DS16 - None
+DS17 - On board sensor
+
+DI00 - None
+DI01 - None
+DI02 - None
+DI03 - None
+DI04 - None
+DI05 - None
+DI06 - None
+DI07 - None
+DI08 - None
+DI09 - None
+DI10 - None
+DI11 - None
+DI12 - None
+DI13 - None
+DI14 - None
+DI15 - None
+
+DO01 - None
+DO02 - None
+DO03 - None
+DO04 - None
+DO05 - None
+DO06 - None
+DO07 - None
+DO08 - None
+DO09 - None
+DO10 - None
+DO11 - None
+DO12 - None
+DO13 - Temperature control Heater 1
+DO14 - Temperature control Heater 2
+DO15 - Temperature control Heater 3
+DO16 - Temperature control Heater 4
+
+IV00 - General failure flag
+IV01 - Temperature control setpoint
+IV02 - Temperature control mode
+IV03 - Temperature control calculated temperature
+IV04 - Temperature control drifted sensor
+IV05 - PID output value
