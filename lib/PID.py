@@ -24,7 +24,7 @@ except AttributeError:
     warnings.warn('time.monotonic() not available in python < 3.3, using time.time() as fallback')
 
 
-class PID(object):
+class PID:
     """
     A simple PID controller. No fuss.
     """
@@ -64,14 +64,6 @@ class PID(object):
         self.proportional_on_measurement = proportional_on_measurement
 
         self.reset()
-
-        # Defined here as None to remove the 'Instance attribute defined out of __init__ warnings
-        self._integral = None
-        self._proportional = None
-        self._derivative = None
-        self._last_input = None
-        self._last_output = None
-        self._last_time = None
 
     def __call__(self, input_, dt=None):
         """
