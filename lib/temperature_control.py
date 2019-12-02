@@ -38,7 +38,6 @@ class TemperatureControl:
         self._pid.output_limits = (0, 100)
 
     def execute(self, requirements_dict=None):
-        # TODO Failed Dict and Failed Sensors show the same information. Look for efficiencies
         # Designed for ONLY 3 sensors. drift logic will not work with more or less sensors.
         values_dict = dict()
         if not isinstance(requirements_dict, dict):
