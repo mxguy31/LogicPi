@@ -6,6 +6,7 @@ from bin.constants import CONFIG
 from datetime import datetime
 from datetime import timedelta
 import bin.utilities as utilities
+from bin.datalog import Datalogger
 log = logging.getLogger(__name__)
 
 
@@ -14,17 +15,21 @@ def main_loop():
     log.info('*************** Starting Pi_PLC ****************')
 
     config = utilities.get_config(CONFIG.CONFIG_FILE)
+    data_config = utilities.get_config(Path(CONFIG.LOG_CONFIG_FILE))
+    module_config = utilities.get_config(Path(CONFIG.MODULE_CONFIG_FILE))
+
     if config is None:
         print(datetime.now(), 'No config file was found, system is shutting down')
         sys.exit(1)
 
-    module_config = utilities.get_config(Path(CONFIG.MODULE_CONFIG_FILE))
     user_modules = utilities.get_ext_modules(module_config)
 
     utilities.setup_logger(config)
 
     database = utilities.get_database(config)
     database.write_data(database.SYSTEM_STATUS, database.ON)
+
+    datalog = Datalogger(data_config)
 
     paused_flag = False
     print(datetime.now(), 'PLC Running.')
@@ -54,6 +59,8 @@ def main_loop():
             utilities.run_ext_modules(database, user_modules, 'Interface', 'Output')
 
             log.debug('PLC cycle completed')
+
+        datalog.log_data(database.dump_data())
 
     print(datetime.now(), 'Closing Database.')
     database.close()

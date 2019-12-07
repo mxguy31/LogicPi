@@ -41,7 +41,7 @@ class Database:
             cursor.execute(sql)
             cursor.close()
             self._conn.commit()
-            log.debug('Database connection from established.')
+            log.debug('Database connection established.')
 
         except sqlite3.Error as e:
             log.exception('Database error')
@@ -71,6 +71,13 @@ class Database:
         sql = ''' SELECT * FROM system_status WHERE parameter=? '''
         data = self._cursor_ops(sql, (parameter,))
         return data
+
+    def dump_data(self):
+        sql = '''SELECT * FROM system_status'''
+        cursor = self._conn.cursor()
+        cursor.execute(sql)
+        results = cursor.fetchall()
+        return results
 
     def close(self):
         self._conn.close()

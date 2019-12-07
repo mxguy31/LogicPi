@@ -90,7 +90,8 @@ def get_config(config_file):
     if not os.path.isfile(os.path.join(os.path.dirname(os.path.abspath(__file__)), config_file)):
         return None
     else:
-        config = configparser.ConfigParser()
+        config = configparser.ConfigParser(allow_no_value=True)
+        config.optionxform = str
         config.read(os.path.join(os.path.dirname(os.path.abspath(__file__)), config_file), encoding='utf-8')
         return config
 

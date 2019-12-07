@@ -4,6 +4,7 @@ import logging
 class CONFIG:
     CONFIG_FILE = 'config.ini'
     MODULE_CONFIG_FILE = '../lib/modules.ini'
+    LOG_CONFIG_FILE = 'data_logger.ini'
     BACKUP_DATA = 'backup.db'
     LOGGING_DIR = 'logs'
     SYSLOG_LEVEL = logging.INFO
