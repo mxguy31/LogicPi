@@ -7,6 +7,7 @@ from datetime import datetime
 from datetime import timedelta
 import bin.utilities as utilities
 from bin.datalog import Datalogger
+from bin.repetetive_task import RepeatEvery
 log = logging.getLogger(__name__)
 
 
@@ -26,6 +27,20 @@ def main_loop():
     database.write_data(database.SYSTEM_STATUS, database.ON)
 
     datalog = Datalogger(config)
+    if config.has_option('data_log', 'log_period'):
+        log_period = float(config.get('data_log', 'log_period'))
+    else:
+        log_period = CONST.DATLOG_PERIOD
+
+    nextminute = datetime.now().replace(second=0, microsecond=0) + timedelta(seconds=60)
+    if nextminute.minute % 2:  # ensure minute is an even amount just for OCD sake.
+        logminute = nextminute + timedelta(minutes=1)
+    else:
+        logminute = nextminute
+
+    logger = RepeatEvery(logminute, log_period, datalog.log_data(database.dump_data()))
+    log.info('Data logger started')
+    logger.start()
 
     paused_flag = False
     print(datetime.now(), 'PLC Running.')
@@ -54,12 +69,12 @@ def main_loop():
             #  Run the output functions
             utilities.run_ext_modules(database, user_modules, 'Interface', 'Output')
 
-        datalog.log_data(database.dump_data())
-
     print(datetime.now(), 'Closing Database.')
     database.close()
 
     # clean up outputs
+    log.info('Data logger stopped.')
+    logger.stop()
     log.info('PLC Stopped.')
     print(datetime.now(), 'PLC Stopped.')
 

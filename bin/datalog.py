@@ -1,7 +1,6 @@
 import csv
 import os
 import logging
-import time
 from datetime import datetime
 from bin.database import Database
 from bin.constants import CONST
@@ -14,13 +13,6 @@ class Datalogger:
             log_directory = os.path.abspath(config.get('misc', 'log_dir'))
         else:
             log_directory = CONST.LOGGING_DIR
-
-        if config.has_option('data_log', 'log_period'):
-            self._log_period = float(config.get('data_log', 'log_period'))
-        else:
-            self._log_period = CONST.DATLOG_PERIOD
-
-        self._timestamp = time.monotonic()
 
         if not os.path.exists(log_directory):
             os.makedirs(log_directory)
@@ -64,12 +56,6 @@ class Datalogger:
 
     def log_data(self, data=None):
         # Create log item for each database value
-        elapsed_time = time.monotonic() - self._timestamp
-        if elapsed_time < self._log_period:
-            return
-        else:
-            self._timestamp = time.monotonic()
-
         if data is None or not isinstance(data, list):
             return
         headers = self._get_headers()
