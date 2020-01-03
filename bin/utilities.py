@@ -6,7 +6,7 @@ from datetime import datetime
 from bin.database import Database
 import configparser
 import logging
-from bin.constants import CONFIG
+from bin.constants import CONST
 log = logging.getLogger(__name__)
 
 
@@ -15,10 +15,11 @@ def import_module(module_name):
     module = None
     t_name = '.' + module_name
     try:
-        if importlib.util.find_spec(t_name, CONFIG.MODULE_FOLDER) is not None:  # Check if module exists first
-            module = importlib.import_module(t_name, CONFIG.MODULE_FOLDER)  # Import module
+        if importlib.util.find_spec(t_name, CONST.MODULE_FOLDER) is not None:  # Check if module exists first
+            module = importlib.import_module(t_name, CONST.MODULE_FOLDER)  # Import module
+            log.info('User module "' + str(module_name) + '" imported.')
     except ImportError:
-        log.error('Failed to load user module: ', module_name)
+        log.error('Failed to import user module: ' + str(module_name))
 
     return module
 
@@ -32,10 +33,13 @@ def get_ext_modules(config):
 
     for section in config.sections():
         try:
-            if not (config.has_option(section, 'type') and  # Check to ensure minimum information is present
+            if not config.getboolean(section, 'enabled'):  # Check if this module is enabled
+                log.info('User module "' + str(section) + '" found, but disabled in config file.')
+                continue
+            elif not (config.has_option(section, 'type') and  # Check to ensure minimum information is present
                     config.has_option(section, 'enabled') and
-                    config.has_option(section, 'class') and
-                    config.getboolean(section, 'enabled')):  # Check if this module is enabled
+                    config.has_option(section, 'class')):
+                log.error(CONST.MOD_CONF_FILE + ' does not have the correct information for: ' + str(section))
                 continue
         except ValueError:
             continue
@@ -49,14 +53,15 @@ def get_ext_modules(config):
             if key == 'class':
                 t_class = getattr(t_module, value)  # Load the module class
             elif key == 'enabled':
-                continue  # Skip this key, it is only used in this function
-            elif not (func_string.search(key) or key == 'type'):
+                continue  # Skip this key, it is only used above
+            elif not (func_string.search(key) or key == 'type'):  # Search for all values required for the logic engine
                 t_mod_config[key] = value  # Transfer user config values to a new dict
             else:
                 mod_dict[key] = value  # Else just transfer the config values
 
         mod_dict['class'] = t_class(t_mod_config)  # Overwrite the class name with the loaded class
         module_dict[section] = mod_dict
+        log.info('User module "' + str(section) + '" loaded.')
 
     return module_dict
 
@@ -88,15 +93,18 @@ def run_ext_modules(database, user_modules, mod_type, func_type='Logic'):
 def get_config(config_file):
     print(datetime.now(), 'Loading config from ' + str(config_file))
     if not os.path.isfile(os.path.join(os.path.dirname(os.path.abspath(__file__)), config_file)):
+        log.error('Config file "' + str(config_file) + '" not found.')
         return None
     else:
-        config = configparser.ConfigParser()
+        config = configparser.ConfigParser(allow_no_value=True)
+        config.optionxform = str
         config.read(os.path.join(os.path.dirname(os.path.abspath(__file__)), config_file), encoding='utf-8')
+        log.info('Config file "' + str(config_file) + '" loaded.')
         return config
 
 
 def setup_logger(config):
-    log_level = logging.INFO
+    log_level = CONST.SYSLOG_LEVEL
     if config.has_option('misc', 'log_level'):
         if config.get('misc', 'log_level') == 'DEBUG':
             log_level = logging.DEBUG
@@ -110,12 +118,12 @@ def setup_logger(config):
     if config.has_option('file_system', 'log_dir'):
         log_directory = os.path.abspath(config.get('file_system', 'log_dir'))
     else:
-        log_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), CONFIG.LOGGING_DIR)
+        log_directory = os.path.join(os.path.dirname(os.path.abspath(__file__)), CONST.LOGGING_DIR)
 
     if not os.path.exists(log_directory):
         os.makedirs(log_directory)
 
-    log_name = os.path.join(log_directory, CONFIG.SYSLOG_NAME)
+    log_name = os.path.join(log_directory, CONST.SYSLOG_FILE)
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', filename=log_name,
                         level=log_level)
 

@@ -2,7 +2,7 @@ import curses
 import threading
 import bin.logicpi
 import bin.utilities as utilities
-from bin.constants import CONFIG
+from bin.constants import CONST
 import sys
 
 menus = {True: ['Diagnostics', 'Pause', 'Exit'], False: ['Diagnostics', 'Resume', 'Exit']}
@@ -10,7 +10,7 @@ menus = {True: ['Diagnostics', 'Pause', 'Exit'], False: ['Diagnostics', 'Resume'
 thread = threading.Thread(target=bin.logicpi.main_loop, daemon=True)
 thread.start()
 
-config = utilities.get_config(CONFIG.CONFIG_FILE)
+config = utilities.get_config(CONST.SYS_CONF_FILE)
 if config is None:
     print('No config file was found, system is shutting down')
     sys.exit(1)

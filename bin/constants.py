@@ -1,14 +1,16 @@
+import os
 import logging
 
 
-class CONFIG:
-    CONFIG_FILE = 'config.ini'
-    MODULE_CONFIG_FILE = '../lib/modules.ini'
-    BACKUP_DATA = 'backup.db'
-    LOGGING_DIR = 'logs'
+class CONST:
+    SYS_CONF_DIR = os.path.dirname(os.path.abspath(__file__))
+    SYS_CONF_FILE = 'config.ini'
+    MOD_CONF_DIR = os.path.abspath(os.path.join(SYS_CONF_DIR, '../lib'))
+    MOD_CONF_FILE = 'modules.ini'
+    LOGGING_DIR = os.path.abspath(os.path.join(SYS_CONF_DIR, '../logs'))
     SYSLOG_LEVEL = logging.INFO
-    SYSLOG_NAME = 'syslog.log'
-    DATLOG_NAME = 'data.log'
-    MIN_DAT_FRQ = 30
+    SYSLOG_FILE = 'syslog.log'
+    DATLOG_FILE = 'datlog.csv'
+    DATLOG_PERIOD = 120
     MIN_CYC_FRQ = 1
     MODULE_FOLDER = '.lib'

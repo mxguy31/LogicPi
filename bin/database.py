@@ -41,11 +41,11 @@ class Database:
             cursor.execute(sql)
             cursor.close()
             self._conn.commit()
-            log.debug('Database connection from established.')
+            log.debug('Database connection established.')
 
         except sqlite3.Error as e:
-            log.exception('Database error')
-            print("Database error: " + str(e))
+            log.exception('Database error: ' + str(e))
+            # print("Database error: " + str(e))
 
     def _cursor_ops(self, sql, data):
         try:
@@ -59,8 +59,8 @@ class Database:
                 return row
 
         except sqlite3.Error as e:
-            log.exception('Database error')
-            print("Database error: " + str(e))
+            log.exception('Database error: ' + str(e))
+            # print("Database error: " + str(e))
 
     def write_data(self, parameter, value):
         data = (str(parameter), str(value), int(time.time()))
@@ -71,6 +71,13 @@ class Database:
         sql = ''' SELECT * FROM system_status WHERE parameter=? '''
         data = self._cursor_ops(sql, (parameter,))
         return data
+
+    def dump_data(self):
+        sql = '''SELECT * FROM system_status'''
+        cursor = self._conn.cursor()
+        cursor.execute(sql)
+        results = cursor.fetchall()
+        return results
 
     def close(self):
         self._conn.close()
