@@ -49,11 +49,31 @@ class MCP23017:
         self._porta = porta
         self._portb = portb
 
+        self._access_error = False
+
     def _setregister(self, register, value):
-        self._i2c.write_byte_data(self._address, register, value)
+        try:
+            self._i2c.write_byte_data(self._address, register, value)
+            self._access_error = False
+
+        except OSError:
+            if not self._access_error:
+                self._access_error = True
+                log.warning('I2C device at address ' + str(hex(self._address)) + ' could not be accessed.')
+                # print('I2C device at address ' + str(hex(self._address)) + ' could not be accessed.')
 
     def _getregister(self, register):
-        return self._i2c.read_byte_data(self._address, register)
+        try:
+            value = self._i2c.read_byte_data(self._address, register)
+            self._access_error = False
+        except OSError:
+            if not self._access_error:
+                self._access_error = True
+                log.warning('I2C device at address ' + str(hex(self._address)) + ' could not be accessed.')
+                # print('I2C device at address ' + str(hex(self._address)) + ' could not be accessed.')
+            value = 0xFF
+
+        return value
 
     def _changebit(self, bitmap, bit, value):
         assert value == 1 or value == 0, "Value is %s, it must be 1 or 0" % value
@@ -160,3 +180,35 @@ class MCP23017:
     def set_stat16(self, status):
         self.portb = (status >> 8) & 0xFF
         self.porta = status & 0xFF
+
+
+class PCF8754:
+    def __init__(self, address, busnum=1):
+        self._address = address
+        self._i2c = SMBus(busnum)
+        self._access_error = False
+
+    def set_out(self, output):
+        try:
+            self._i2c.write_byte(self._address, (~output & 0xFF))
+            self._access_error = False
+
+        except OSError:
+            if not self._access_error:
+                self._access_error = True
+                log.warning('I2C device at address ' + str(hex(self._address)) + ' could not be accessed.')
+                # print('I2C device at address ' + str(hex(self._address)) + ' could not be accessed.')
+
+    def get_out(self):
+        try:
+            value = ~self._i2c.read_byte(self._address) & 0xFF
+            self._access_error = False
+
+        except OSError:
+            if not self._access_error:
+                self._access_error = True
+                log.warning('I2C device at address ' + str(hex(self._address)) + ' could not be accessed.')
+                # print('I2C device at address ' + str(hex(self._address)) + ' could not be accessed.')
+            value = 0x00
+
+        return value

@@ -1,5 +1,4 @@
-import os
-import glob
+import ow
 import logging
 import threading
 import time
@@ -8,69 +7,44 @@ log = logging.getLogger(__name__)
 
 class OWFSTemperature:
 
-    _owfs_map = {
-        1:  0,  2:  1,  3:  2,  4:  3,
-        5:  4,  6:  5,  7:  6,  8:  7,
-        9:  8,  10: 9,  11: 10, 12: 11,
-        13: 12, 14: 13, 15: 14, 16: 15,
-        17: 16
-    }
-
     _default_config = {
-        'owfs_location': '/mnt/owfs/', 'loop_time': 5,
-        'DS01': 1,  'DS02': 2,  'DS03': 3,  'DS04': 4,
-        'DS05': 5,  'DS06': 6,  'DS07': 7,  'DS08': 8,
-        'DS09': 9,  'DS10': 10, 'DS11': 11, 'DS12': 12,
-        'DS13': 13, 'DS14': 14, 'DS15': 15, 'DS16': 16,
-        'DS17': 17
+        'location': 'localhost:4304',
+        'loop_time': 10,
     }
 
     def __init__(self, config=None):
-        self._temperature_dict = {
-            'DS01': -300, 'DS02': -300, 'DS03': -300, 'DS04': -300,
-            'DS05': -300, 'DS06': -300, 'DS07': -300, 'DS08': -300,
-            'DS09': -300, 'DS10': -300, 'DS11': -300, 'DS12': -300,
-            'DS13': -300, 'DS14': -300, 'DS15': -300, 'DS16': -300,
-            'DS17': -300
-        }
-
         self._config = self._default_config.copy()
         if isinstance(config, dict):
             self._config.update(config)
 
-        self._owfs_location = self._config['owfs_location']
+        self._location = self._config['location']
         self._loop_time = int(self._config['loop_time'])
-        del self._config['owfs_location']
+        del self._config['location']
         del self._config['loop_time']
+
+        self._temperature_dict = dict()
+        for sensor in self._config.keys():
+            self._temperature_dict[sensor] = -300
 
         self._thread = threading.Thread(target=self._temperature_loop, daemon=True)
         self._thread.start()
-        print('OWFS Running')
 
     def _temperature_loop(self):
+        ow.init(self._location)
+        sensorlist = ow.Sensor('/').sensorList()
+
         while True:
-            for sensor, card_map in self._config.items():
-                temperature = -300
-                if sensor.startswith('DS'):
-                    sensor_bus = os.path.join(self._owfs_location,
-                                              'bus.' + str(self._owfs_map[card_map]),
-                                              '28.*', 'temperature')
-                    for sensor_file in glob.glob(sensor_bus):
-                        try:
-                            with open(sensor_file) as sensor_temperature:
-                                temperature = float(sensor_temperature.read())
-                                break
+            for ow_sensor in sensorlist:
+                for IOPoint in self._config.keys():
+                    try:
+                        if ow_sensor.alias in self._config[IOPoint]:
+                            self._temperature_dict[IOPoint] = ow_sensor.temperature
 
-                        except OSError:
-                            log.warning('Sensor ' + str(sensor) + ' could not be read')
-                            print("Sensor " + str(sensor) + " could not be read")
+                    except Exception as e:
+                        log.exception('An error occurred while obtaining sensor temperature: ' + str(IOPoint))
+                        log.exception(e)
+                        raise
 
-                        except Exception:
-                            log.exception('An unforeseen error occurred ' + str(sensor))
-                            print('An unforeseen error occurred when reading sensor ' + str(sensor))
-                            raise
-
-                    self._temperature_dict[sensor] = temperature
             time.sleep(self._loop_time)
 
     def get_values(self, sensors=None):

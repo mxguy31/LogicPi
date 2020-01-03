@@ -44,8 +44,8 @@ class Database:
             log.debug('Database connection established.')
 
         except sqlite3.Error as e:
-            log.exception('Database error')
-            print("Database error: " + str(e))
+            log.exception('Database error: ' + str(e))
+            # print("Database error: " + str(e))
 
     def _cursor_ops(self, sql, data):
         try:
@@ -59,8 +59,8 @@ class Database:
                 return row
 
         except sqlite3.Error as e:
-            log.exception('Database error')
-            print("Database error: " + str(e))
+            log.exception('Database error: ' + str(e))
+            # print("Database error: " + str(e))
 
     def write_data(self, parameter, value):
         data = (str(parameter), str(value), int(time.time()))

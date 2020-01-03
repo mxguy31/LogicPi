@@ -1,5 +1,6 @@
 import time
-
+import logging
+log = logging.getLogger(__name__)
 
 class HeaterDuty:
     _default_config = {
@@ -17,7 +18,7 @@ class HeaterDuty:
         self._rotate_time = float(self._config['rotate_time'])
         self._demand = 0
         self._order = [1, 2, 3, 4]
-        self._heater_dict = {1: 'DO13', 2: 'DO14', 3: 'DO15', 4: 'DO16'}
+        self._heater_dict = {1: 'DO21', 2: 'DO22', 3: 'DO23', 4: 'DO24'}
         self._epoch = time.monotonic()
 
     def execute(self, requirements_dict=None):
@@ -32,8 +33,9 @@ class HeaterDuty:
         if elapsed_time > self._rotate_time:
             self._epoch = time.monotonic()
             self._order = self._order[1:] + self._order[:1]
+            log.info('Heater duty swap completed: ' + str(self._order))
 
-        return_dict = {'DO13': 0, 'DO14': 0, 'DO15': 0, 'DO16': 0}
+        return_dict = {'DO21': 0, 'DO22': 0, 'DO23': 0, 'DO24': 0}
         if self._demand > 0:
             return_dict[self._heater_dict[self._order[0]]] = 1
         if self._demand >= 25:

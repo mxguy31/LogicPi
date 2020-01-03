@@ -1,8 +1,8 @@
 import sys
+import os
 import time
 import logging
-from pathlib import Path
-from bin.constants import CONFIG
+from bin.constants import CONST
 from datetime import datetime
 from datetime import timedelta
 import bin.utilities as utilities
@@ -11,31 +11,27 @@ log = logging.getLogger(__name__)
 
 
 def main_loop():
-    log.info('************************************************')
-    log.info('*************** Starting Pi_PLC ****************')
-
-    config = utilities.get_config(CONFIG.CONFIG_FILE)
-    data_config = utilities.get_config(Path(CONFIG.LOG_CONFIG_FILE))
-    module_config = utilities.get_config(Path(CONFIG.MODULE_CONFIG_FILE))
+    config = utilities.get_config(CONST.SYS_CONF_FILE)
 
     if config is None:
         print(datetime.now(), 'No config file was found, system is shutting down')
         sys.exit(1)
 
-    user_modules = utilities.get_ext_modules(module_config)
-
     utilities.setup_logger(config)
+
+    module_config = utilities.get_config(os.path.join(CONST.MOD_CONF_DIR, CONST.MOD_CONF_FILE))
+    user_modules = utilities.get_ext_modules(module_config)
 
     database = utilities.get_database(config)
     database.write_data(database.SYSTEM_STATUS, database.ON)
 
-    datalog = Datalogger(data_config)
+    datalog = Datalogger(config)
 
     paused_flag = False
     print(datetime.now(), 'PLC Running.')
     log.info('PLC Running.')
     while True:
-        sleepy = datetime.now().replace(microsecond=0) + timedelta(seconds=CONFIG.MIN_CYC_FRQ) - datetime.now()
+        sleepy = datetime.now().replace(microsecond=0) + timedelta(seconds=CONST.MIN_CYC_FRQ) - datetime.now()
         time.sleep(sleepy.seconds + sleepy.microseconds / 1000000)
 
         if database.read_data(database.SYSTEM_STATUS)[database.VALUE] == database.OFF:
@@ -57,8 +53,6 @@ def main_loop():
 
             #  Run the output functions
             utilities.run_ext_modules(database, user_modules, 'Interface', 'Output')
-
-            log.debug('PLC cycle completed')
 
         datalog.log_data(database.dump_data())
 
