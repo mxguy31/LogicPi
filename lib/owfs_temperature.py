@@ -44,7 +44,6 @@ class OWFSTemperature:
                         log.exception('An error occurred while obtaining sensor temperature: ' + str(IOPoint))
                         log.exception(e)
                         raise
-
             time.sleep(self._loop_time)
 
     def get_values(self, sensors=None):

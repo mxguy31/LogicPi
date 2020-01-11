@@ -30,19 +30,21 @@ class RelayBox:
         if not isinstance(relays, dict):
             relays = dict()
 
-        status = self._output.get_out() & 0xFF
-        temp_compare = status
-        for relay, value in relays.items():
-            if relay in self._config:
-                if str(value) == '0':
-                    status &= ~(1 << self._pcf8754_map[self._config[relay]])
-                else:
-                    status |= (1 << self._pcf8754_map[self._config[relay]])
-
+        status, error = self._output.get_out()
         status &= 0xFF
-        if status != temp_compare:
-            self._output.set_out(status)
-            log.debug('Relay Box outputs set to: ' + str(bin(status)))
+        if not error:
+            temp_compare = status
+            for relay, value in relays.items():
+                if relay in self._config:
+                    if str(value) == '0':
+                        status &= ~(1 << self._pcf8754_map[self._config[relay]])
+                    else:
+                        status |= (1 << self._pcf8754_map[self._config[relay]])
+
+            status &= 0xFF
+            if status != temp_compare:
+                self._output.set_out(status)
+                log.debug('Relay Box outputs set to: ' + str(bin(status)))
 
     def get_outputs(self, relays=None):
         if not isinstance(relays, list):

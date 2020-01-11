@@ -6,9 +6,9 @@ from itertools import combinations
 class TemperatureControl:
     _default_config = {
         'max_drift': .5,
-        'setpoint': 25,
-        'p_gain': 1,
-        'i_gain': .1,
+        'setpoint': 0,
+        'p_gain': 0,
+        'i_gain': 0,
         'd_gain': 0,
         'multi_fail_mode': 'ON'
     }
@@ -22,18 +22,17 @@ class TemperatureControl:
             return
 
         self._max_drift = float(self._config['max_drift'])
-        self._pid_p_gain = float(self._config['p_gain'])
-        self._pid_i_gain = float(self._config['i_gain'])
-        self._pid_d_gain = float(self._config['d_gain'])
-        self._setpoint = float(self._config['setpoint'])
         self._fail_mode = self._config['multi_fail_mode']
+        p_gain = float(self._config['p_gain'])
+        i_gain = float(self._config['i_gain'])
+        d_gain = float(self._config['d_gain'])
+        setpoint = float(self._config['setpoint'])
 
-        self._pid_auto = True
         self._failed_dict = dict()
         self._fail_limit = 6
         self._failed_sensors = list()
 
-        self._pid = PID(self._pid_p_gain, self._pid_i_gain, self._pid_d_gain, self._setpoint)
+        self._pid = PID(p_gain, i_gain, d_gain, setpoint)
         self._pid.sample_time = 5
         self._pid.output_limits = (0, 100)
 
@@ -48,10 +47,13 @@ class TemperatureControl:
                     values_dict[key] = float(value)
                     if key not in self._failed_dict:
                         self._failed_dict[key] = 0
-                elif key == 'IV02' and value is False:
-                    self._pid_auto = False
+                elif key == 'IV02':
+                    if str(value) == 'False':
+                        self._pid.set_auto_mode(False)
+                    else:
+                        self._pid.set_auto_mode(True, requirements_dict['IV05'])
                 elif key == 'IV01':
-                    self._setpoint = float(value)
+                    self._pid.setpoint = float(value)
 
         combo_list = list(combinations(values_dict.keys(), 2))
         drift_list = list()
@@ -109,5 +111,7 @@ class TemperatureControl:
                     'IV03': calculated_temperature,
                     'IV04': self._failed_sensors,
                     'IV05': pid_output}
+
+
 
         return ret_dict

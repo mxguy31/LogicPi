@@ -168,18 +168,20 @@ class MCP23017:
         self._setregister(self._GPPUB, self._gppub)
 
     def get_dir16(self):
-        return (self.iodirb << 8) | self.iodira
+        return (self.iodirb << 8) | self.iodira, self._access_error
 
     def set_dir16(self, direction):
         self.iodirb = (direction >> 8) & 0xFF
         self.iodira = direction & 0xFF
+        return self._access_error
 
     def get_stat16(self):
-        return (self.portb << 8) | self.porta
+        return (self.portb << 8) | self.porta, self._access_error
 
     def set_stat16(self, status):
         self.portb = (status >> 8) & 0xFF
         self.porta = status & 0xFF
+        return self._access_error
 
 
 class PCF8754:
@@ -199,6 +201,8 @@ class PCF8754:
                 log.warning('I2C device at address ' + str(hex(self._address)) + ' could not be accessed.')
                 # print('I2C device at address ' + str(hex(self._address)) + ' could not be accessed.')
 
+        return self._access_error
+
     def get_out(self):
         try:
             value = ~self._i2c.read_byte(self._address) & 0xFF
@@ -211,4 +215,4 @@ class PCF8754:
                 # print('I2C device at address ' + str(hex(self._address)) + ' could not be accessed.')
             value = 0x00
 
-        return value
+        return value, self._access_error
