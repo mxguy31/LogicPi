@@ -12,5 +12,5 @@ class CONST:
     SYSLOG_FILE = 'syslog.log'
     DATLOG_FILE = 'datlog.csv'
     DATLOG_PERIOD = 120
-    MIN_CYC_FRQ = 1
+    MIN_CYC_PERIOD = 2
     MODULE_FOLDER = '.lib'

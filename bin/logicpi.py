@@ -4,10 +4,8 @@ import time
 import logging
 from bin.constants import CONST
 from datetime import datetime
-from datetime import timedelta
 import bin.utilities as utilities
 from bin.datalog import Datalogger
-from bin.repetetive_task import RepeatEvery
 log = logging.getLogger(__name__)
 
 
@@ -26,28 +24,13 @@ def main_loop():
     database = utilities.get_database(config)
     database.write_data(database.SYSTEM_STATUS, database.ON)
 
-    datalog = Datalogger(config)
-    if config.has_option('data_log', 'log_period'):
-        log_period = float(config.get('data_log', 'log_period'))
-    else:
-        log_period = CONST.DATLOG_PERIOD
-
-    nextminute = datetime.now().replace(second=0, microsecond=0) + timedelta(seconds=60)
-    if nextminute.minute % 2:  # ensure minute is an even amount just for OCD sake.
-        logminute = nextminute + timedelta(minutes=1)
-    else:
-        logminute = nextminute
-
-    logger = RepeatEvery(logminute, log_period, datalog.log_data(database.dump_data()))
-    log.info('Data logger started')
-    logger.start()
+    Datalogger(config)
 
     paused_flag = False
     print(datetime.now(), 'PLC Running.')
     log.info('PLC Running.')
     while True:
-        sleepy = datetime.now().replace(microsecond=0) + timedelta(seconds=CONST.MIN_CYC_FRQ) - datetime.now()
-        time.sleep(sleepy.seconds + sleepy.microseconds / 1000000)
+        start_time_stamp = time.time()
 
         if database.read_data(database.SYSTEM_STATUS)[database.VALUE] == database.OFF:
             log.info('PLC operation stopped as requested by database flag.')
@@ -69,12 +52,14 @@ def main_loop():
             #  Run the output functions
             utilities.run_ext_modules(database, user_modules, 'Interface', 'Output')
 
-    print(datetime.now(), 'Closing Database.')
-    database.close()
+        end_timestamp = time.time()
+        sleep_time = (start_time_stamp + CONST.MIN_CYC_PERIOD) - end_timestamp
+        if CONST.MIN_CYC_PERIOD > sleep_time > 0:
+            time.sleep(sleep_time)
+        else:
+            time.sleep(CONST.MIN_CYC_PERIOD)
 
-    # clean up outputs
-    log.info('Data logger stopped.')
-    logger.stop()
+    # TODO clean up outputs
     log.info('PLC Stopped.')
     print(datetime.now(), 'PLC Stopped.')
 

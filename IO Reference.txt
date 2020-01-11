@@ -45,10 +45,15 @@ DO09 - None
 DO10 - None
 DO11 - None
 DO12 - None
-DO13 - Temperature control Heater 1
-DO14 - Temperature control Heater 2
-DO15 - Temperature control Heater 3
-DO16 - Temperature control Heater 4
+DO13 - None
+DO14 - None
+DO15 - None
+DO16 - None
+
+DO21 - Temperature control Heater 1
+DO22 - Temperature control Heater 2
+DO23 - Temperature control Heater 3
+DO24 - Temperature control Heater 4
 
 IV00 - General failure flag
 IV01 - Temperature control setpoint
